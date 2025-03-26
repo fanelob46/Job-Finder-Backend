@@ -10,7 +10,7 @@ import { FORBIDDEN, UNAUTHORIZED } from "../../constants/http.codes";
 declare global {
   namespace Express {
     interface Request {
-      user?: SanitizedUser;
+      user?: UserDocument;
     }
   }
 }
@@ -46,18 +46,7 @@ const protect = asyncHandler(
       }
 
       // Convert to our SanitizedUser type
-      req.user = {
-        _id: user._id,
-        firstname: user.firstname,
-        lastname: user.lastname,
-        email: user.email,
-        role: user.role,
-        contact: user.contact,
-        location: user.location,
-        jobs: user.jobs,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-      };
+      req.user = user; 
 
       next();
     } catch (error) {

@@ -9,6 +9,6 @@ export type SanitizedUser = {
   contact: string;
   location: string;
   jobs: Types.ObjectId[];
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 };

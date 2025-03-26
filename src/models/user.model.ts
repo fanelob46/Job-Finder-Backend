@@ -1,29 +1,32 @@
-import mongoose, { Schema, Types } from "mongoose";
-import bcrypt from "bcrypt"
+import mongoose, { Schema, Types, Document, Model } from "mongoose";
+import bcrypt from "bcrypt";
 
-export interface UserDocument extends mongoose.Document {
+export type UserRole = "admin" | "user";
+
+interface IUser {
   firstname: string;
   lastname: string;
   email: string;
   password: string;
-  role: "admin" | "user";
+  role: UserRole;
   contact: string;
   location: string;
   jobs: Types.ObjectId[];
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
-const UserSchema = new mongoose.Schema(
+export interface UserDocument extends IUser, Document {
+  _id: Types.ObjectId;
+  matchPassword(enteredPassword: string): Promise<boolean>;
+}
+
+interface UserModel extends Model<UserDocument> {}
+
+const UserSchema = new Schema<UserDocument, UserModel>(
   {
-    firstname: {
-      type: String,
-      required: true,
-    },
-    lastname: {
-      type: String,
-      required: true,
-    },
+    firstname: { type: String, required: true },
+    lastname: { type: String, required: true },
     email: {
       type: String,
       required: true,
@@ -31,53 +34,35 @@ const UserSchema = new mongoose.Schema(
       trim: true,
       lowercase: true,
     },
-    password: { type: String, required: true },
+    password: { type: String, required: true, select: false },
     role: {
       type: String,
       enum: ["admin", "user"],
       default: "user",
     },
-    contact: {
-      type: String,
-      required: true,
-    },
-    location: {
-      type: String,
-      required: true,
-    },
-
-    jobs: [{ type: Schema.Types.ObjectId, ref: "Jobs" }],
+    contact: { type: String, required: true },
+    location: { type: String, required: true },
+    jobs: [{ type: Schema.Types.ObjectId, ref: "Job" }],
   },
   {
     timestamps: true,
+    toJSON: {
+      virtuals: true,
+      transform: (doc, ret) => {
+        delete ret.password;
+        delete ret.__v;
+        return ret;
+      },
+    },
   }
 );
 
-UserSchema.pre("save", async function(next) {
-let user = this as UserDocument;
-
-if (!user.isModified("password")) {
-  return next();
-}
-
-const salt = await bcrypt.genSalt(10);
-
-const hash = await bcrypt.hashSync(user.password, salt);
-
-user.password = hash;
-
-return next();
-})
-
 UserSchema.methods.matchPassword = async function (
+  this: UserDocument,
   enteredPassword: string
 ): Promise<boolean> {
-  const user = this as UserDocument;
-  return await bcrypt
-    .compare(enteredPassword, user.password)
-    .catch((e) => false);
+  return bcrypt.compare(enteredPassword, this.password).catch(() => false);
 };
 
-const User = mongoose.model("User", UserSchema);
-
+const User = mongoose.model<UserDocument, UserModel>("User", UserSchema);
 export default User;

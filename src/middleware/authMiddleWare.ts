@@ -1,5 +1,5 @@
 // middlewares/auth.middleware.ts
-import jwt from "jsonwebtoken";
+import jwt from "jsonwebtoken"
 import asyncHandler from "express-async-handler";
 import { Request, Response, NextFunction } from "express";
 import { HttpError } from "../utils/HttpError";

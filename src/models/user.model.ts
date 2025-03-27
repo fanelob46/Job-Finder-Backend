@@ -34,7 +34,7 @@ const UserSchema = new Schema<UserDocument, UserModel>(
       trim: true,
       lowercase: true,
     },
-    password: { type: String, required: true, select: false },
+    password: { type: String, required: true },
     role: {
       type: String,
       enum: ["admin", "user"],
@@ -46,16 +46,26 @@ const UserSchema = new Schema<UserDocument, UserModel>(
   },
   {
     timestamps: true,
-    toJSON: {
-      virtuals: true,
-      transform: (doc, ret) => {
-        delete ret.password;
-        delete ret.__v;
-        return ret;
-      },
-    },
+   
   }
 );
+
+UserSchema.pre<UserDocument>("save", async function (next) {
+  // Type 'this' as UserDocument
+  const user = this as UserDocument;
+
+  if (!user.isModified("password")) {
+    return next();
+  }
+
+  try {
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(user.password, salt);
+    next();
+  } catch (error: any) {
+    next(error);
+  }
+});
 
 UserSchema.methods.matchPassword = async function (
   this: UserDocument,

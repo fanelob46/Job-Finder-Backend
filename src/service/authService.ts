@@ -1,9 +1,11 @@
+import { ObjectId } from "mongoose";
 import {
   BAD_REQUEST,
   CONFLICT,
   NOT_FOUND,
   UNAUTHORIZED,
 } from "../../constants/http.codes";
+import Jobs from "../models/job.model";
 import User, { UserDocument, UserRole } from "../models/user.model";
 import { HttpError } from "../utils/HttpError";
 
@@ -38,6 +40,22 @@ interface ApplicationResult {
   success: boolean;
   message: string;
   data?: any;
+}
+
+interface ApplyForJobParams {
+  jobId: string;
+  userId: string;
+}
+
+interface ApplyForJobResponse {
+  success: boolean;
+  message: string;
+}
+
+interface Job {
+  _id: ObjectId | any;
+  applications: ObjectId[]; // Or string[], depending on how you store user IDs
+  // ... other job properties
 }
 
 export const registerUser = async (
@@ -132,4 +150,57 @@ export const updateProfile = async (
   return userObject as Omit<UserDocument, "password">;
 };
 
+export const applyForJob = async (
+  jobId: string,
+  userId: string
+): Promise<{ success: boolean; message: string }> => {
+ 
+  const alreadyApplied = await Jobs.findOne({
+    _id: jobId,
+    applications: userId,
+  });
 
+  if (alreadyApplied) {
+    throw new HttpError("You have already applied for this job", CONFLICT);
+  }
+
+  // Add the user to the job's applications
+  const job = await Jobs.findByIdAndUpdate(
+    jobId,
+    { $push: { applications: userId } },
+    { new: true }
+  );
+
+  if (!job) {
+    throw new HttpError("Job not found", NOT_FOUND);
+  }
+
+  return {
+    success: true,
+    message: "Application submitted successfully",
+  };
+};
+
+export const getUserApplications = async (
+  userId: string
+): Promise<{ success: boolean; message: string; data: Job[] }> => {
+  
+    //Find jobs the user has applied for
+    const jobs = await Jobs.find({ applications: userId }).populate({
+      path: "applications",
+      select: "firstname lastname email",
+    });
+
+    // Check if jobs were found
+    if (!jobs || jobs.length === 0) {
+      throw new HttpError("No applications found", NOT_FOUND);
+    }
+
+    // Return the result
+    return {
+      success: true,
+      message: "Jobs user has applied for",
+      data: jobs,
+    };
+  
+};

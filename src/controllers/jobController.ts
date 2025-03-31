@@ -1,14 +1,17 @@
-
-import { CREATED } from "../../constants/http.codes";
+import { CREATED, INTERNAL_SERVER_ERROR } from "../../constants/http.codes";
 import Jobs from "../models/job.model";
-import asyncHandler from "express-async-handler"
+import asyncHandler from "express-async-handler";
 
 import { Request, Response, NextFunction, RequestHandler } from "express";
 import { addJob } from "../service/jobService";
-import { deleteOneDoc, getAllDocs, getOneDoc, updateOneDoc } from "../service/crudHandlerFactor";
+import {
+  deleteOneDoc,
+  getAllDocs,
+  getOneDoc,
+  updateOneDoc,
+} from "../service/crudHandlerFactor";
 
-
-export const getJob : RequestHandler = getOneDoc(Jobs)
+export const getJob: RequestHandler = getOneDoc(Jobs);
 export const deleteJob: RequestHandler = deleteOneDoc(Jobs);
 export const updateJob: RequestHandler = updateOneDoc(Jobs);
 export const getAllJobs: RequestHandler = getAllDocs(Jobs);
@@ -29,15 +32,19 @@ export const addJobHandler = asyncHandler(
     res: Response,
     next: NextFunction
   ) => {
-    
-      const jobData = await addJob(req.body);
-      const data = new Jobs(jobData);
+    const jobData = await addJob(req.body);
+    const data = new Jobs(jobData);
 
+    if (data) {
       res.status(CREATED).json({
         message: "Job Created Successfully",
         data: data,
       });
-    
-  }
+    } else {
+      res.status(INTERNAL_SERVER_ERROR).json({
+        message: "Failed to add job",
+        data: data,
+      });
+    }
+  } 
 );
-

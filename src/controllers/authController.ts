@@ -12,13 +12,7 @@ import {
 import { HttpError } from "../utils/HttpError";
 
 // Extend Express Request type with user property
-declare global {
-  namespace Express {
-    interface Request {
-      user?: UserDocument;
-    }
-  }
-}
+
 
 export const registHandler = asyncHandler(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -34,6 +28,7 @@ export const registHandler = asyncHandler(
       message: "User successfully registered",
       data,
     });
+    console.log(data);
   }
 );
 

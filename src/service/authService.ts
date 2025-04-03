@@ -1,4 +1,4 @@
-import { ObjectId } from "mongoose";
+import { ObjectId, Types } from "mongoose";
 import {
   BAD_REQUEST,
   CONFLICT,
@@ -152,7 +152,7 @@ export const updateProfile = async (
 
 export const applyForJob = async (
   jobId: string,
-  userId: string
+  userId: Types.ObjectId
 ): Promise<{ success: boolean; message: string }> => {
  
   const alreadyApplied = await Jobs.findOne({

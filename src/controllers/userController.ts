@@ -14,16 +14,16 @@ export const deleteUser: RequestHandler = deleteOneDoc(User);
 export const updateUser: RequestHandler = updateOneDoc(User);
 export const getAllUser: RequestHandler = getAllDocs(User);
 
-interface AuthRequest extends Request {
-  user?: {
-    _id: string; 
-  };
-  body: {
-    jobId: string; 
-  };
-}
+// interface AuthRequest extends Request {
+//   user?: {
+//     _id: string; 
+//   };
+//   body: {
+//     jobId: string; 
+//   };
+// }
 
-export const applyForHandler = async (req: AuthRequest, res: Response) => {
+export const applyForHandler = async (req: Request, res: Response) => {
   const { jobId } = req.body;
   const userId = req.user?._id;
 
@@ -45,7 +45,7 @@ export const applyForHandler = async (req: AuthRequest, res: Response) => {
 };
 
 export const getUserApplicationsHandler = async (
-  req: AuthRequest,
+  req: Request,
   res: Response
 ) => {
   const userId = req.user?._id;
@@ -66,3 +66,5 @@ export const getUserApplicationsHandler = async (
     });
   }
 };
+
+

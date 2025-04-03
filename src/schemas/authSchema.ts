@@ -39,9 +39,7 @@ export const registerSchema = loginSchema
       .max(50, "Last name must be less than 50 characters")
       .regex(/^[a-zA-Z]+$/, "Last name must contain only letters"),
 
-    confirmPassword: z.string().min(1, "Please confirm your password"),
-
-    role: z.enum(["user", "admin"]).default("user").optional(),
+    confirmPassword: z.string().min(6, "Confirm Password is required"),
 
     location: z
       .string()
@@ -71,5 +69,3 @@ export const registerSchema = loginSchema
       });
     }
   });
-
-
